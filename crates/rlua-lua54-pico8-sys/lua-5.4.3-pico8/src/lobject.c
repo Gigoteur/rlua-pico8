@@ -220,6 +220,39 @@ static lua_Number lua_strx2number (const char *s, char **endptr) {
 #define L_MAXLENNUM	200
 #endif
 
+static lua_Number readbin (const char **s, lua_Number r, int *count) {
+  for (; **s == '0' || **s == '1'; (*s)++) {
+    r += **s == '0' ? r : r + cast_num(1);
+    (*count)++;
+  }
+  return r;
+}
+
+/*
+** convert a binary numeric string to a number
+*/
+static lua_Number lua_strb2number (const char *s, char **endptr) {
+  lua_Number r = 0.0;
+  int e = 0, i = 0;
+  int neg = 0;  /* 1 if number is negative */
+  *endptr = cast(char *, s);  /* nothing is valid yet */
+  while (lisspace(cast_uchar(*s))) s++;  /* skip initial spaces */
+  neg = isneg(&s);  /* check signal */
+  if (!(*s == '0' && (*(s + 1) == 'b' || *(s + 1) == 'B')))  /* check '0b' */
+    return 0.0;  /* invalid format (no '0b') */
+  s += 2;  /* skip '0b' */
+  r = readbin(&s, r, &i);  /* read integer part */
+  if (*s == '.') {
+    s++;  /* skip dot */
+    r = readbin(&s, r, &e);  /* read fractional part */
+  }
+  if (i == 0 && e == 0)
+    return 0.0;  /* invalid format (no digit) */
+  *endptr = cast(char *, s);  /* valid up to here */
+  if (neg) r = -r;
+  return l_mathop(ldexp)(r, -e);
+}
+
 /*
 ** Convert string 's' to a Lua number (put in 'result'). Return NULL on
 ** fail or the address of the ending '\0' on success. ('mode' == 'x')
@@ -227,13 +260,16 @@ static lua_Number lua_strx2number (const char *s, char **endptr) {
 */
 static const char *l_str2dloc (const char *s, lua_Number *result, int mode) {
   char *endptr;
-  *result = (mode == 'x') ? lua_strx2number(s, &endptr)  /* try to convert */
-                          : lua_str2number(s, &endptr);
+  if (mode == 'b') {
+    *result = lua_strb2number(s, &endptr);
+  } else {
+    *result = (mode == 'x') ? lua_strx2number(s, &endptr)  /* try to convert */
+                            : lua_str2number(s, &endptr);
+  }
   if (endptr == s) return NULL;  /* nothing recognized? */
   while (lisspace(cast_uchar(*endptr))) endptr++;  /* skip trailing spaces */
   return (*endptr == '\0') ? endptr : NULL;  /* OK iff no trailing chars */
 }
-
 
 /*
 ** Convert string 's' to a Lua number (put in 'result') handling the
@@ -250,7 +286,7 @@ static const char *l_str2dloc (const char *s, lua_Number *result, int mode) {
 */
 static const char *l_str2d (const char *s, lua_Number *result) {
   const char *endptr;
-  const char *pmode = strpbrk(s, ".xXnN");  /* look for special chars */
+  const char *pmode = strpbrk(s, ".xXnNbB");  /* look for special chars */
   int mode = pmode ? ltolower(cast_uchar(*pmode)) : 0;
   if (mode == 'n')  /* reject 'inf' and 'nan' */
     return NULL;
