@@ -1821,7 +1821,7 @@ static void exprstat (LexState *ls) {
     v.prev = NULL;
     compound(ls, &v.v);
   }
-  if (ls->t.token == '=' || ls->t.token == ',') { /* stat -> assignment ? */
+  else if (ls->t.token == '=' || ls->t.token == ',') { /* stat -> assignment ? */
     v.prev = NULL;
     restassign(ls, &v, 1);
   }
