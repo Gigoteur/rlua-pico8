@@ -249,7 +249,7 @@ impl<'lua, 'scope> Scope<'lua, 'scope> {
             // We need a single user value here for the data pointer
             // TODO: is there any need for additional user values within this userdata?
             push_userdata_uv(lua.state, (), 1)?;
-            #[cfg(any(rlua_lua53, rlua_lua54))]
+            #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
             ffi::lua_pushlightuserdata(lua.state, data.as_ptr() as *mut c_void);
             #[cfg(rlua_lua51)]
             {

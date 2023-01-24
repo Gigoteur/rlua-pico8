@@ -418,7 +418,7 @@ impl<'lua> AnyUserData<'lua> {
             if ffi::lua_getmetatable(lua.state, -1) == 0 {
                 Err(Error::UserDataTypeMismatch)
             } else {
-                #[cfg(any(rlua_lua53, rlua_lua54))]
+                #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
                 ffi::lua_rawgeti(
                     lua.state,
                     ffi::LUA_REGISTRYINDEX,

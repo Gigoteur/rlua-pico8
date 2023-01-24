@@ -428,7 +428,7 @@ impl Lua {
     /// documentation][lua_doc].
     ///
     /// [lua_doc]: https://www.lua.org/manual/5.4/manual.html#2.5
-    #[cfg_attr(rlua_lua54, rlua_lua54_pico8, deprecated(note = "please use `gc_set_inc` instead"))]
+    #[cfg_attr(any(rlua_lua54, rlua_lua54_pico8), deprecated(note = "please use `gc_set_inc` instead"))]
     #[allow(deprecated)]
     pub fn gc_set_pause(&self, pause: c_int) -> c_int {
         unsafe { ffi::lua_gc(self.main_state, ffi::LUA_GCSETPAUSE, pause) }
@@ -440,7 +440,7 @@ impl Lua {
     /// [Lua 5.4 documentation][lua_doc].
     ///
     /// [lua_doc]: https://www.lua.org/manual/5.4/manual.html#2.5
-    #[cfg_attr(rlua_lua54, rlua_lua54_pico8, deprecated(note = "please use `gc_set_inc` instead"))]
+    #[cfg_attr(any(rlua_lua54, rlua_lua54_pico8), deprecated(note = "please use `gc_set_inc` instead"))]
     #[allow(deprecated)]
     pub fn gc_set_step_multiplier(&self, step_multiplier: c_int) -> c_int {
         unsafe { ffi::lua_gc(self.main_state, ffi::LUA_GCSETSTEPMUL, step_multiplier) }
