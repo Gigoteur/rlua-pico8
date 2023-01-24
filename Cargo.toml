@@ -14,7 +14,8 @@ license = "MIT"
 circle-ci = { repository = "amethyst/rlua", branch = "master" }
 
 [features]
-default=["builtin-lua54"]
+default=["builtin-lua54-pico8"]
+builtin-lua54-pico8=["rlua-lua54-pico8-sys"]
 builtin-lua54=["rlua-lua54-sys"]
 builtin-lua53=["rlua-lua53-sys"]
 builtin-lua51=["rlua-lua51-sys"]
@@ -24,7 +25,7 @@ system-lua53=["rlua-lua53-sys", "rlua-lua53-sys/lua53-pkg-config"]
 system-lua51=["rlua-lua51-sys", "rlua-lua51-sys/lua51-pkg-config"]
 
 # Remove Lua's os lib
-lua-no-oslib=["rlua-lua54-sys/lua-no-oslib","rlua-lua53-sys/lua-no-oslib","rlua-lua51-sys/lua-no-oslib"]
+lua-no-oslib=["rlua-lua54-pico8-sys/lua-no-oslib", "rlua-lua54-sys/lua-no-oslib","rlua-lua53-sys/lua-no-oslib","rlua-lua51-sys/lua-no-oslib"]
 
 # Enabled functions from the math module that have been deprecated
 lua-compat-mathlib = []
@@ -35,6 +36,7 @@ libc = { version = "0.2" }
 num-traits = { version = "0.2.14" }
 bitflags = { version = "1.0.4" }
 bstr = {version = "0.2", features = ["std"], default_features = false }
+rlua-lua54-pico8-sys = { version = "0.1.3", optional = true, path = "crates/rlua-lua54-pico8-sys" }
 rlua-lua54-sys = { version = "0.1.3", optional = true }
 rlua-lua53-sys = { version = "0.1.2", optional = true }
 rlua-lua51-sys = { version = "0.1.2", optional = true }

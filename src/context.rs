@@ -17,7 +17,7 @@ use crate::table::Table;
 use crate::thread::Thread;
 use crate::types::{Callback, Integer, LightUserData, LuaRef, Number, RegistryKey};
 use crate::userdata::{AnyUserData, MetaMethod, UserData, UserDataMethods};
-#[cfg(any(rlua_lua53, rlua_lua54))]
+#[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8, rlua_lua54, rlua_lua54_pico8_pico8))]
 use crate::util::isluainteger;
 use crate::util::{
     assert_stack, callback_error, check_stack, get_userdata, get_wrapped_error,
@@ -307,7 +307,7 @@ impl<'lua> Context<'lua> {
     /// Lua manual for details.
     pub fn coerce_integer(self, v: Value<'lua>) -> Result<Option<Integer>> {
         Ok(match v {
-            #[cfg(any(rlua_lua53, rlua_lua54))]
+            #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
             Value::Integer(i) => Some(i),
             v => unsafe {
                 let _sg = StackGuard::new(self.state);
@@ -476,7 +476,7 @@ impl<'lua> Context<'lua> {
             let _sg = StackGuard::new(self.state);
             assert_stack(self.state, 2);
 
-            #[cfg(any(rlua_lua53, rlua_lua54))]
+            #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
             ffi::lua_rawgeti(
                 self.state,
                 ffi::LUA_REGISTRYINDEX,
@@ -559,7 +559,7 @@ impl<'lua> Context<'lua> {
                 ffi::lua_pushlightuserdata(self.state, ud.0);
             }
 
-            #[cfg(any(rlua_lua53, rlua_lua54))]
+            #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
             Value::Integer(i) => {
                 ffi::lua_pushinteger(self.state, i);
             }
@@ -623,7 +623,7 @@ impl<'lua> Context<'lua> {
                     ffi::lua_pop(self.state, 1);
                     n
                 }
-                #[cfg(any(rlua_lua53, rlua_lua54))]
+                #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
                 if isluainteger(self.state, -1) != 0 {
                     let i = Value::Integer(ffi::lua_tointeger(self.state, -1) as i64);
                     ffi::lua_pop(self.state, 1);
@@ -830,7 +830,7 @@ impl<'lua> Context<'lua> {
         let ud_index = self.userdata_metatable::<T>()?;
         let uvalues_count = data.get_uvalues_count();
         push_userdata_uv::<RefCell<T>>(self.state, RefCell::new(data), uvalues_count)?;
-        #[cfg(any(rlua_lua53, rlua_lua54))]
+        #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
         ffi::lua_rawgeti(
             self.state,
             ffi::LUA_REGISTRYINDEX,
@@ -887,7 +887,7 @@ impl<'lua> Context<'lua> {
                 ffi::LUA_OK => {
                     if let Some(env) = env {
                         self.push_value(env)?;
-                        #[cfg(any(rlua_lua53, rlua_lua54))]
+                        #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
                         ffi::lua_setupvalue(self.state, -2, 1);
                         #[cfg(rlua_lua51)]
                         {

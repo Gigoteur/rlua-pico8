@@ -1,5 +1,11 @@
 fn main() {
     let mut lua_version_features = 0;
+    #[cfg(feature = "builtin-lua54-pico8")]
+    {
+        println!("cargo:rustc-cfg=rlua_lua54_pico8");
+        lua_version_features += 1;
+    }
+
     #[cfg(feature = "builtin-lua54")]
     {
         println!("cargo:rustc-cfg=rlua_lua54");

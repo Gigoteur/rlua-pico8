@@ -2,7 +2,7 @@ use std::any::TypeId;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::marker::PhantomData;
-#[cfg(rlua_lua54)]
+#[cfg(any(rlua_lua54, rlua_lua54_pico8))]
 use std::os::raw::c_uint;
 use std::os::raw::{c_int, c_void};
 use std::ptr;
@@ -74,7 +74,7 @@ bitflags! {
     }
 }
 
-#[cfg(rlua_lua54)]
+#[cfg(any(rlua_lua54, rlua_lua54_pico8))]
 // at 812, tests pass
 // at 813, tests fail
 // at 700, it should be somewhat safe
@@ -334,7 +334,7 @@ impl Lua {
         }
     }
 
-    #[cfg(any(rlua_lua53, rlua_lua54))]
+    #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
     /// Returns true if the garbage collector is currently running automatically.
     pub fn gc_is_running(&self) -> bool {
         unsafe { ffi::lua_gc(self.main_state, ffi::LUA_GCISRUNNING, 0) != 0 }
@@ -385,7 +385,7 @@ impl Lua {
         }
     }
 
-    #[cfg(rlua_lua54)]
+    #[cfg(any(rlua_lua54, rlua_lua54_pico8))]
     /// Sets the garbage collector to incremental mode.
     ///
     /// Returns the previous mode (`LUA_GCGEN` or `LUA_GCINC`).  More information can be found in the
@@ -404,7 +404,7 @@ impl Lua {
         }
     }
 
-    #[cfg(rlua_lua54)]
+    #[cfg(any(rlua_lua54, rlua_lua54_pico8))]
     /// Sets the garbage collector to generational mode.
     ///
     /// Returns the previous mode (`LUA_GCGEN` or `LUA_GCINC`).  More information can be found in the
@@ -428,7 +428,7 @@ impl Lua {
     /// documentation][lua_doc].
     ///
     /// [lua_doc]: https://www.lua.org/manual/5.4/manual.html#2.5
-    #[cfg_attr(rlua_lua54, deprecated(note = "please use `gc_set_inc` instead"))]
+    #[cfg_attr(rlua_lua54, rlua_lua54_pico8, deprecated(note = "please use `gc_set_inc` instead"))]
     #[allow(deprecated)]
     pub fn gc_set_pause(&self, pause: c_int) -> c_int {
         unsafe { ffi::lua_gc(self.main_state, ffi::LUA_GCSETPAUSE, pause) }
@@ -440,7 +440,7 @@ impl Lua {
     /// [Lua 5.4 documentation][lua_doc].
     ///
     /// [lua_doc]: https://www.lua.org/manual/5.4/manual.html#2.5
-    #[cfg_attr(rlua_lua54, deprecated(note = "please use `gc_set_inc` instead"))]
+    #[cfg_attr(rlua_lua54, rlua_lua54_pico8, deprecated(note = "please use `gc_set_inc` instead"))]
     #[allow(deprecated)]
     pub fn gc_set_step_multiplier(&self, step_multiplier: c_int) -> c_int {
         unsafe { ffi::lua_gc(self.main_state, ffi::LUA_GCSETSTEPMUL, step_multiplier) }
@@ -472,7 +472,7 @@ pub(crate) struct ExtraData {
 // Return the extra data pointer passed to `lua_newstate()`.  `state` must
 // be the main state, not a substate.
 pub(crate) unsafe fn extra_data(state: *mut ffi::lua_State) -> *mut ExtraData {
-    #[cfg(any(rlua_lua53, rlua_lua54))]
+    #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
     return *(ffi::lua_getextraspace(state) as *mut *mut ExtraData);
     #[cfg(rlua_lua51)]
     {
@@ -543,7 +543,7 @@ unsafe fn create_lua(lua_mod_to_load: StdLib, init_flags: InitFlags) -> Lua {
         &mut *extra as *mut ExtraData as *mut c_void,
     );
 
-    #[cfg(rlua_lua54)]
+    #[cfg(any(rlua_lua54, rlua_lua54_pico8))]
     ffi::lua_setcstacklimit(state, SAFE_CSTACK_SIZE);
 
     extra.ref_thread = rlua_expect!(
@@ -590,7 +590,7 @@ unsafe fn create_lua(lua_mod_to_load: StdLib, init_flags: InitFlags) -> Lua {
             // binary files.
             if init_flags.contains(InitFlags::LOAD_WRAPPERS) {
                 // These are easier to override in Lua.
-                #[cfg(any(rlua_lua53, rlua_lua54))]
+                #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
                 let wrapload = r#"
                     do
                         -- load(chunk [, chunkname [, mode [, env]]])
@@ -719,7 +719,7 @@ unsafe fn create_lua(lua_mod_to_load: StdLib, init_flags: InitFlags) -> Lua {
 
                     #[cfg(rlua_lua51)]
                     let searchers_name = cstr!("loaders");
-                    #[cfg(any(rlua_lua53, rlua_lua54))]
+                    #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
                     let searchers_name = cstr!("searchers");
 
                     ffi::lua_getfield(state, -1, searchers_name);
@@ -753,7 +753,7 @@ unsafe fn create_lua(lua_mod_to_load: StdLib, init_flags: InitFlags) -> Lua {
     rlua_debug_assert!(ffi::lua_gettop(state) == 0, "stack leak during creation");
     assert_stack(state, ffi::LUA_MINSTACK as i32);
 
-    #[cfg(any(rlua_lua53, rlua_lua54))]
+    #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
     {
         // Place pointer to ExtraData in the lua_State "extra space"
         *(ffi::lua_getextraspace(state) as *mut *mut ExtraData) = Box::into_raw(extra);
@@ -772,7 +772,7 @@ unsafe fn load_from_std_lib(state: *mut ffi::lua_State, lua_mod: StdLib) {
     if lua_mod.contains(StdLib::BASE) {
         requiref(state, cstr!("_G"), Some(ffi::luaopen_base), 1);
     }
-    #[cfg(any(rlua_lua53, rlua_lua54))]
+    #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
     if lua_mod.contains(StdLib::COROUTINE) {
         requiref(state, cstr!("coroutine"), Some(ffi::luaopen_coroutine), 1);
     }
@@ -789,7 +789,7 @@ unsafe fn load_from_std_lib(state: *mut ffi::lua_State, lua_mod: StdLib) {
     if lua_mod.contains(StdLib::STRING) {
         requiref(state, cstr!("string"), Some(ffi::luaopen_string), 1);
     }
-    #[cfg(any(rlua_lua53, rlua_lua54))]
+    #[cfg(any(rlua_lua53, rlua_lua54, rlua_lua54_pico8))]
     if lua_mod.contains(StdLib::UTF8) {
         requiref(state, cstr!("utf8"), Some(ffi::luaopen_utf8), 1);
     }
